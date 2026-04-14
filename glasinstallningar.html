@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glasinstallningar</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg:#0f1117; --surface:#1a1d27; --border:#2a2d3a; --accent:#f0a500; --text:#e8eaf0; --muted:#7a7f96; --red:#e74c3c; }
+  body { background:var(--bg); color:var(--text); font-family:'Barlow',sans-serif; min-height:100vh; }
+  header { background:linear-gradient(135deg,#1a1d27,#0f1117); border-bottom:3px solid var(--accent); padding:20px 28px 18px; }
+  header p { color:var(--muted); font-size:0.8rem; letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
+  header h1 { font-family:'Barlow Condensed',sans-serif; font-size:2.2rem; font-weight:900; letter-spacing:2px; text-transform:uppercase; line-height:1; }
+  header h1 span { color:var(--accent); }
+  .count-pill { display:inline-block; background:var(--accent); color:#000; font-family:'Barlow Condensed',sans-serif; font-size:0.85rem; font-weight:900; padding:2px 10px; border-radius:20px; margin-left:12px; letter-spacing:1px; vertical-align:middle; }
+  .search-wrap { padding:22px 28px 0; max-width:860px; }
+  .search-box { display:flex; gap:10px; }
+  .search-box input { flex:1; background:var(--surface); border:2px solid var(--border); border-radius:6px; color:var(--text); font-family:'Barlow',sans-serif; font-size:1.05rem; padding:13px 18px; outline:none; transition:border-color 0.2s; }
+  .search-box input:focus { border-color:var(--accent); }
+  .search-box input::placeholder { color:var(--muted); }
+  .clear-btn { background:var(--surface); border:2px solid var(--border); border-radius:6px; color:var(--muted); cursor:pointer; font-size:1.1rem; padding:11px 16px; transition:all 0.2s; }
+  .clear-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .filters { padding:14px 28px 0; display:flex; gap:7px; flex-wrap:wrap; }
+  .filter-btn { background:var(--surface); border:1.5px solid var(--border); border-radius:20px; color:var(--muted); cursor:pointer; font-family:'Barlow Condensed',sans-serif; font-size:0.82rem; font-weight:600; letter-spacing:1px; padding:5px 14px; text-transform:uppercase; transition:all 0.2s; }
+  .filter-btn:hover,.filter-btn.active { background:var(--accent); border-color:var(--accent); color:#000; }
+  .results-header { padding:16px 28px 10px; color:var(--muted); font-size:0.78rem; letter-spacing:1.5px; text-transform:uppercase; }
+  .results-header span { color:var(--accent); font-weight:600; }
+  .grid { padding:0 28px 40px; display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+  .card { background:var(--surface); border:1.5px solid var(--border); border-radius:10px; overflow:hidden; transition:border-color 0.2s,transform 0.15s; }
+  .card:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .card-head { background:linear-gradient(90deg,#21243a,#1a1d27); padding:12px 16px 10px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .card-title { font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:700; line-height:1.2; }
+  .brand-tag { color:var(--muted); font-size:0.68rem; letter-spacing:1px; margin-bottom:3px; }
+  .rec-badge { background:var(--accent); border-radius:4px; color:#000; font-family:'Barlow Condensed',sans-serif; font-size:0.88rem; font-weight:900; padding:3px 9px; white-space:nowrap; letter-spacing:1px; flex-shrink:0; }
+  .obs-tag { display:inline-block; background:rgba(231,76,60,0.15); border:1px solid var(--red); border-radius:4px; color:var(--red); font-size:0.68rem; font-weight:600; letter-spacing:1px; padding:2px 7px; margin-top:5px; text-transform:uppercase; }
+  .card-body { padding:12px 16px 14px; display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .stat { display:flex; flex-direction:column; gap:2px; }
+  .stat-label { color:var(--muted); font-size:0.68rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; }
+  .stat-value { font-family:'Barlow Condensed',sans-serif; font-size:1.35rem; font-weight:700; line-height:1; }
+  .stat-value.hl { color:var(--accent); }
+  .stat-value.na { color:var(--muted); font-size:0.95rem; }
+  .uppr-row { grid-column:1/-1; background:#12151f; border-radius:6px; padding:9px 12px; margin-top:2px; }
+  .uppr-label { color:var(--muted); font-size:0.68rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:7px; }
+  .uppr-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; }
+  .uppr-cell { background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:5px 3px; text-align:center; }
+  .uppr-cell.u1 { border-color:var(--accent); background:#1e1a0e; }
+  .uppr-cell-lbl { color:var(--muted); font-size:0.58rem; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:1px; }
+  .uppr-cell-val { font-family:'Barlow Condensed',sans-serif; font-size:0.95rem; font-weight:700; display:block; }
+  .uppr-cell.u1 .uppr-cell-val { color:var(--accent); font-size:1.2rem; }
+  .uppr-cell-val.na { color:var(--border); font-size:0.75rem; }
+  .note { grid-column:1/-1; color:var(--muted); font-size:0.75rem; font-style:italic; line-height:1.4; margin-top:1px; }
+  .empty { grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--muted); font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; letter-spacing:1px; }
+  @media(max-width:600px){
+    header,.search-wrap,.filters,.results-header,.grid{padding-left:14px;padding-right:14px;}
+    header h1{font-size:1.7rem;} .grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <p>Kalibreringsverktyg</p>
+  <h1>Glas<span>Installningar</span> <span class="count-pill" id="totalCount"></span></h1>
+</header>
+<div class="search-wrap">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Sok... t.ex. Passat FDV, BMW G11, Volvo V526, REC 231" autofocus>
+    <button class="clear-btn" id="clearBtn">&#x2715;</button>
+  </div>
+</div>
+<div class="filters" id="filterBtns"></div>
+<div class="results-header" id="resultsHeader"></div>
+<div class="grid" id="grid"></div>
+
+<script>
+var data = [
+  // ── CITROEN ──────────────────────────────────────────────
+  { bil:"Citroen B587 FDH",          marke:"Citroen", rec:"90",  ryggstod:null, u1:"Q", u2:5,   u3:300, u4:270, u5:35,  obs:null, note:null },
+  { bil:"Citroen B51 BDV",           marke:"Citroen", rec:"93",  ryggstod:null, u1:"K", u2:85,  u3:350, u4:190, u5:95,  obs:null, note:null },
+  { bil:"Citroen B51 BDH",           marke:"Citroen", rec:"94",  ryggstod:null, u1:"K", u2:55,  u3:350, u4:190, u5:95,  obs:null, note:null },
+  { bil:"Citroen B51 FDV",           marke:"Citroen", rec:"75",  ryggstod:null, u1:"E", u2:35,  u3:300, u4:270, u5:5,   obs:null, note:null },
+  { bil:"Citroen B51 FDH",           marke:"Citroen", rec:"76",  ryggstod:null, u1:"Q", u2:5,   u3:300, u4:270, u5:35,  obs:null, note:null },
+  { bil:"Citroen X7 FDV",            marke:"Citroen", rec:"99",  ryggstod:null, u1:"E", u2:35,  u3:300, u4:200, u5:35,  obs:null, note:null },
+  { bil:"Citroen X7 FDH",            marke:"Citroen", rec:"100", ryggstod:null, u1:"Q", u2:35,  u3:300, u4:200, u5:35,  obs:null, note:null },
+  { bil:"Citroen X7 BDV",            marke:"Citroen", rec:"131", ryggstod:null, u1:"J", u2:90,  u3:320, u4:150, u5:90,  obs:null, note:null },
+  { bil:"Citroen X7 BDH",            marke:"Citroen", rec:"132", ryggstod:null, u1:"L", u2:90,  u3:310, u4:150, u5:90,  obs:null, note:null },
+  { bil:"Citroen 981 FDH",           marke:"Citroen", rec:"149", ryggstod:null, u1:"Q", u2:35,  u3:300, u4:145, u5:80,  obs:null, note:null },
+  { bil:"Citroen 981 FDV",           marke:"Citroen", rec:"150", ryggstod:null, u1:"E", u2:35,  u3:300, u4:145, u5:80,  obs:null, note:null },
+  { bil:"Citroen B785 BDV",          marke:"Citroen", rec:"167", ryggstod:null, u1:"J", u2:90,  u3:320, u4:235, u5:95,  obs:null, note:null },
+  { bil:"Citroen B785 BDH",          marke:"Citroen", rec:"168", ryggstod:null, u1:"L", u2:90,  u3:310, u4:210, u5:95,  obs:null, note:null },
+  { bil:"Citroen B787 BDV",          marke:"Citroen", rec:"169", ryggstod:null, u1:"J", u2:90,  u3:320, u4:215, u5:95,  obs:null, note:null },
+  { bil:"Citroen B787 BDH",          marke:"Citroen", rec:"170", ryggstod:null, u1:"L", u2:90,  u3:310, u4:210, u5:95,  obs:null, note:null },
+  { bil:"Citroen B78 FDV",           marke:"Citroen", rec:"183", ryggstod:70,   u1:"E", u2:35,  u3:300, u4:275, u5:95,  obs:null, note:null },
+  { bil:"Citroen B78 FDH",           marke:"Citroen", rec:"184", ryggstod:70,   u1:"Q", u2:35,  u3:300, u4:250, u5:70,  obs:null, note:null },
+  { bil:"Citroen X74 BDV",           marke:"Citroen", rec:"79",  ryggstod:null, u1:"K", u2:160, u3:280, u4:110, u5:110, obs:null, note:"Skumgummi som bild visar pa pack instruktionerna" },
+  { bil:"Citroen X74 BDH",           marke:"Citroen", rec:"80",  ryggstod:null, u1:"K", u2:130, u3:275, u4:110, u5:160, obs:null, note:"Skumgummi som bild visar pa pack instruktionerna" },
+  // ── LAND ROVER ───────────────────────────────────────────
+  { bil:"Land Rover 663 FDV",        marke:"Land Rover", rec:"77",  ryggstod:null, u1:"E", u2:75,  u3:190, u4:230, u5:0,   obs:null, note:"27/3-2023 Omprogrammerad i Sidled. Kolla FI med ny frigolit" },
+  { bil:"Land Rover 663 FDH",        marke:"Land Rover", rec:"78",  ryggstod:null, u1:"R", u2:90,  u3:263, u4:240, u5:-8,  obs:null, note:"27/3-2023 Omprogrammerad i Sidled. Kolla FI med ny frigolit" },
+  { bil:"Land Rover FDV",            marke:"Land Rover", rec:"151", ryggstod:null, u1:"C", u2:30,  u3:308, u4:185, u5:0,   obs:null, note:null },
+  { bil:"Land Rover FDH",            marke:"Land Rover", rec:"152", ryggstod:null, u1:"S", u2:0,   u3:308, u4:185, u5:30,  obs:null, note:null },
+  // ── SCANIA ───────────────────────────────────────────────
+  { bil:"Scania FDV 4mm",            marke:"Scania", rec:"1",   ryggstod:null, u1:"K", u2:0,   u3:130, u4:270, u5:10,  obs:null, note:null },
+  { bil:"Scania FDH 4mm",            marke:"Scania", rec:"2",   ryggstod:null, u1:"K", u2:0,   u3:130, u4:270, u5:10,  obs:null, note:null },
+  { bil:"Lam Scania FDV",            marke:"Scania", rec:"12",  ryggstod:null, u1:"K", u2:90,  u3:160, u4:370, u5:125, obs:null, note:"120 per stall" },
+  { bil:"Lam Scania FDH",            marke:"Scania", rec:"11",  ryggstod:null, u1:"K", u2:90,  u3:160, u4:370, u5:70,  obs:null, note:"120 per stall" },
+  { bil:"Temp Scania FDV",           marke:"Scania", rec:"16/124", ryggstod:null, u1:"K", u2:90, u3:140, u4:370, u5:125, obs:null, note:"75 per stall. Ingen vridning transfer" },
+  { bil:"Temp Scania FDH",           marke:"Scania", rec:"15/123", ryggstod:null, u1:"K", u2:90, u3:140, u4:370, u5:70,  obs:null, note:"75 per stall. Ingen vridning transfer" },
+  // ── MASERATI ─────────────────────────────────────────────
+  { bil:"Mas 156 BDV 2,1mm",         marke:"Maserati", rec:"177", ryggstod:null, u1:"J", u2:90,  u3:320, u4:180, u5:30,  obs:null, note:null },
+  { bil:"Mas 156 BDH 2,1mm",         marke:"Maserati", rec:"178", ryggstod:null, u1:"L", u2:170, u3:320, u4:150, u5:170, obs:null, note:null },
+  { bil:"Mas 156 FDV 2,1mm",         marke:"Maserati", rec:"175", ryggstod:70,   u1:"D", u2:0,   u3:300, u4:185, u5:0,   obs:null, note:null },
+  { bil:"Mas 156 FDH 2,1mm",         marke:"Maserati", rec:"176", ryggstod:70,   u1:"R", u2:0,   u3:300, u4:165, u5:0,   obs:null, note:null },
+  { bil:"Mas 157 FDV 5mm",           marke:"Maserati", rec:"179", ryggstod:null, u1:"D", u2:0,   u3:300, u4:195, u5:0,   obs:null, note:null },
+  { bil:"Mas 157 FDH 5mm",           marke:"Maserati", rec:"180", ryggstod:null, u1:"R", u2:0,   u3:300, u4:195, u5:0,   obs:null, note:null },
+  { bil:"Mas 157 BDV 5mm",           marke:"Maserati", rec:"181", ryggstod:null, u1:"J", u2:30,  u3:300, u4:190, u5:30,  obs:null, note:null },
+  { bil:"Mas 157 BDH 5mm",           marke:"Maserati", rec:"182", ryggstod:null, u1:"L", u2:0,   u3:300, u4:190, u5:30,  obs:null, note:null },
+  { bil:"Mas 157 BDV 2,1mm",         marke:"Maserati", rec:"185", ryggstod:null, u1:"L", u2:90,  u3:300, u4:200, u5:30,  obs:null, note:"Prog om Alva, Ylva, Olof, packskav i tak" },
+  { bil:"Mas 157 BDH 2,1mm",         marke:"Maserati", rec:"186", ryggstod:null, u1:"J", u2:30,  u3:300, u4:200, u5:90,  obs:null, note:null },
+  { bil:"Mas M161 FDV 2,6mm",        marke:"Maserati", rec:"235", ryggstod:70,   u1:"A", u2:0,   u3:260, u4:190, u5:0,   obs:null, note:null },
+  { bil:"Mas M161 FDH 2,6mm",        marke:"Maserati", rec:"236", ryggstod:70,   u1:"U", u2:0,   u3:260, u4:190, u5:0,   obs:null, note:null },
+  { bil:"Mas M161 BDV 2,1mm",        marke:"Maserati", rec:"205", ryggstod:null, u1:"J", u2:70,  u3:300, u4:170, u5:0,   obs:"Rott-liggande R0p5HB", note:null },
+  { bil:"Mas M161 BDH 2,1mm",        marke:"Maserati", rec:"206", ryggstod:null, u1:"L", u2:0,   u3:300, u4:170, u5:0,   obs:"Rott-liggande R0p5HB", note:null },
+  { bil:"MAS 161 BDV 5mm",           marke:"Maserati", rec:"239", ryggstod:null, u1:"J", u2:30,  u3:300, u4:170, u5:0,   obs:null, note:null },
+  { bil:"MAS 161 BDH 5mm",           marke:"Maserati", rec:"240", ryggstod:null, u1:"L", u2:0,   u3:300, u4:170, u5:30,  obs:null, note:null },
+  { bil:"Mas 156 FDV 2,6mm",         marke:"Maserati", rec:"173", ryggstod:70,   u1:"D", u2:0,   u3:260, u4:150, u5:0,   obs:null, note:null },
+  { bil:"Mas 156 FDH 2,6mm",         marke:"Maserati", rec:"174", ryggstod:70,   u1:"R", u2:0,   u3:260, u4:150, u5:0,   obs:null, note:null },
+  { bil:"MASM182-RDL 2,1mm",         marke:"Maserati", rec:"257", ryggstod:null, u1:"K", u2:185, u3:290, u4:150, u5:100, obs:null, note:"anvand vinkeln" },
+  { bil:"MASM182-RDR 2,1mm",         marke:"Maserati", rec:"258", ryggstod:null, u1:"K", u2:100, u3:290, u4:150, u5:185, obs:null, note:"anvand vinkeln" },
+  { bil:"MASM182 FDH",               marke:"Maserati", rec:"256", ryggstod:0,    u1:"Q", u2:0,   u3:260, u4:190, u5:0,   obs:null, note:"Blatt Skumgummi pa ryggstod (diagonalt fran stampel)" },
+  { bil:"MASM182 FDV",               marke:"Maserati", rec:"255", ryggstod:0,    u1:"E", u2:0,   u3:260, u4:190, u5:0,   obs:null, note:"Blatt Skumgummi pa ryggstod (diagonalt fran stampel)" },
+  // ── FORD ─────────────────────────────────────────────────
+  { bil:"Ford FDV 1,8mm",            marke:"Ford", rec:"69",  ryggstod:70,   u1:"E", u2:90,  u3:280, u4:160, u5:0,   obs:null, note:null },
+  { bil:"Ford FDH 1,8mm",            marke:"Ford", rec:"70",  ryggstod:70,   u1:"Q", u2:0,   u3:280, u4:160, u5:90,  obs:null, note:null },
+  // ── VOLVO ────────────────────────────────────────────────
+  { bil:"Volvo V526 FDV 2,1mm",      marke:"Volvo", rec:"201", ryggstod:0,    u1:"C", u2:0,   u3:260, u4:250, u5:0,   obs:null, note:"BLA = EMB 2304 stall" },
+  { bil:"Volvo V526 FDH 2,1mm",      marke:"Volvo", rec:"202", ryggstod:0,    u1:"S", u2:0,   u3:260, u4:250, u5:0,   obs:null, note:"BLA = EMB 2304 stall" },
+  { bil:"Volvo V526 BDV 1,6mm",      marke:"Volvo", rec:"217", ryggstod:null, u1:"N", u2:0,   u3:240, u4:230, u5:null,obs:null, note:null },
+  { bil:"Volvo V526 BDH 1,6mm",      marke:"Volvo", rec:"218", ryggstod:null, u1:"N", u2:null,u3:235, u4:230, u5:0,   obs:null, note:null },
+  { bil:"Volvo V526 FDV 5mm",        marke:"Volvo", rec:"213", ryggstod:null, u1:"C", u2:0,   u3:230, u4:260, u5:0,   obs:null, note:null },
+  { bil:"Volvo V526 FDH 5mm",        marke:"Volvo", rec:"214", ryggstod:null, u1:"S", u2:0,   u3:230, u4:260, u5:0,   obs:null, note:null },
+  { bil:"Volvo V526 BDV 4mm",        marke:"Volvo", rec:"215", ryggstod:null, u1:"N", u2:0,   u3:230, u4:260, u5:null,obs:null, note:"Tvattade snoren(Gra) OBS GLAS AR OMPROGRAMMERADE PA YLVA. OK" },
+  { bil:"Volvo V526 BDH 4mm",        marke:"Volvo", rec:"216", ryggstod:null, u1:"N", u2:null,u3:230, u4:260, u5:0,   obs:null, note:"Tvattade snoren(Gra) OBS GLAS AR OMPROGRAMMERADE PA YLVA. OK" },
+  { bil:"Volvo V542 BDV 1,6",        marke:"Volvo", rec:"229", ryggstod:null, u1:"F", u2:0,   u3:300, u4:200, u5:null,obs:null, note:"Dubbla snore Alva, ylva och olof. Anvand vinkel" },
+  { bil:"Volvo V542 BDH 1,6",        marke:"Volvo", rec:"230", ryggstod:null, u1:"P", u2:null,u3:300, u4:205, u5:0,   obs:null, note:"Dubbla snore Alva, ylva och olof. Anvand vinkel" },
+  { bil:"Volvo V541 FDV 5mm",        marke:"Volvo", rec:"243", ryggstod:null, u1:"C", u2:0,   u3:240, u4:190, u5:0,   obs:null, note:null },
+  { bil:"Volvo V541 FDH 5mm",        marke:"Volvo", rec:"244", ryggstod:null, u1:"S", u2:0,   u3:300, u4:230, u5:0,   obs:null, note:null },
+  { bil:"Volvo V541 BDV 1,6",        marke:"Volvo", rec:"227", ryggstod:null, u1:"I", u2:0,   u3:300, u4:185, u5:null,obs:null, note:null },
+  { bil:"Volvo V541 BDH 1,6",        marke:"Volvo", rec:"228", ryggstod:null, u1:"M", u2:null,u3:300, u4:170, u5:0,   obs:null, note:null },
+  { bil:"Volvo V541 FDV 2,1",        marke:"Volvo", rec:"225", ryggstod:70,   u1:"C", u2:0,   u3:240, u4:150, u5:0,   obs:null, note:null },
+  { bil:"Volvo V541 FDH 2,1",        marke:"Volvo", rec:"226", ryggstod:70,   u1:"S", u2:0,   u3:310, u4:220, u5:0,   obs:null, note:null },
+  { bil:"v541/v542 4mm BDV",         marke:"Volvo", rec:"245", ryggstod:null, u1:"K", u2:0,   u3:240, u4:170, u5:null,obs:null, note:null },
+  { bil:"v541/v542 4mm BDH",         marke:"Volvo", rec:"246", ryggstod:null, u1:"K", u2:null,u3:240, u4:170, u5:0,   obs:null, note:null },
+  { bil:"V541 FDV 2,1mm Borrade",    marke:"Volvo", rec:"83",  ryggstod:null, u1:"C", u2:0,   u3:240, u4:180, u5:0,   obs:null, note:null },
+  { bil:"V541 FDH 2,1mm Borrade",    marke:"Volvo", rec:"84",  ryggstod:null, u1:"S", u2:0,   u3:310, u4:250, u5:0,   obs:null, note:null },
+  { bil:"Volvo V426 1,6mm FDV",      marke:"Volvo", rec:"141", ryggstod:0,    u1:"E", u2:0,   u3:250, u4:190, u5:0,   obs:null, note:null },
+  { bil:"Volvo V426 1,6mm FDH",      marke:"Volvo", rec:"142", ryggstod:0,    u1:"T", u2:0,   u3:250, u4:190, u5:0,   obs:null, note:null },
+  { bil:"Volvo V426 1,6mm BDV",      marke:"Volvo", rec:"143", ryggstod:null, u1:"H", u2:190, u3:270, u4:190, u5:null,obs:null, note:null },
+  { bil:"Volvo V426 1,6mm BDH",      marke:"Volvo", rec:"144", ryggstod:null, u1:"M", u2:null,u3:246, u4:170, u5:160, obs:null, note:null },
+  { bil:"V426 4mm BDV",              marke:"Volvo", rec:"171", ryggstod:null, u1:"H", u2:0,   u3:230, u4:230, u5:null,obs:null, note:null },
+  { bil:"V426 4mm BDH",              marke:"Volvo", rec:"172", ryggstod:null, u1:"N", u2:null,u3:230, u4:230, u5:0,   obs:null, note:null },
+  { bil:"Volvo V426 FDV 4mm",        marke:"Volvo", rec:"29",  ryggstod:null, u1:"C", u2:0,   u3:230, u4:230, u5:0,   obs:null, note:null },
+  { bil:"Volvo V426 FDH 4mm",        marke:"Volvo", rec:"30",  ryggstod:null, u1:"S", u2:0,   u3:230, u4:230, u5:0,   obs:null, note:null },
+  // ── PEUGEOT ──────────────────────────────────────────────
+  { bil:"Peugeot Z9 BDV 2,1mm",      marke:"Peugeot", rec:"49",  ryggstod:null, u1:"J", u2:0,   u3:310, u4:180, u5:50,  obs:null, note:null },
+  { bil:"Peugeot Z9 BDH 2,1mm",      marke:"Peugeot", rec:"50",  ryggstod:null, u1:"L", u2:50,  u3:310, u4:180, u5:0,   obs:null, note:null },
+  { bil:"Peugeot Z9 FDV 2,1mm",      marke:"Peugeot", rec:"48",  ryggstod:null, u1:"D", u2:105, u3:300, u4:190, u5:0,   obs:null, note:null },
+  { bil:"Peugeot Z9 FDH 2,1mm",      marke:"Peugeot", rec:"47",  ryggstod:null, u1:"R", u2:0,   u3:300, u4:190, u5:100, obs:null, note:null },
+  { bil:"Peugeot W24 FDV",           marke:"Peugeot", rec:"153", ryggstod:null, u1:"E", u2:10,  u3:300, u4:220, u5:20,  obs:null, note:null },
+  { bil:"Peugeot W24 FDH",           marke:"Peugeot", rec:"154", ryggstod:null, u1:"Q", u2:20,  u3:300, u4:220, u5:10,  obs:null, note:null },
+  { bil:"Peugeot W24 BDV",           marke:"Peugeot", rec:"155", ryggstod:null, u1:"J", u2:90,  u3:320, u4:150, u5:15,  obs:null, note:null },
+  { bil:"Peugeot W24 BDH",           marke:"Peugeot", rec:"156", ryggstod:null, u1:"L", u2:15,  u3:310, u4:150, u5:90,  obs:null, note:null },
+  { bil:"Peugeot T84 FDV",           marke:"Peugeot", rec:"145", ryggstod:null, u1:"E", u2:120, u3:300, u4:120, u5:0,   obs:null, note:null },
+  { bil:"Peugeot T84 FDH",           marke:"Peugeot", rec:"146", ryggstod:null, u1:"Q", u2:0,   u3:300, u4:120, u5:120, obs:null, note:null },
+  // ── RENAULT ──────────────────────────────────────────────
+  { bil:"Renault JFC FDV 1,6mm",     marke:"Renault", rec:"219", ryggstod:70,   u1:"D", u2:0,   u3:300, u4:210, u5:0,   obs:null, note:null },
+  { bil:"Renault JFC FDH 1,6mm",     marke:"Renault", rec:"220", ryggstod:70,   u1:"R", u2:0,   u3:300, u4:210, u5:0,   obs:null, note:null },
+  { bil:"Renault JFC BDV 1,6mm",     marke:"Renault", rec:"221", ryggstod:null, u1:"H", u2:150, u3:310, u4:170, u5:60,  obs:"Stampel upp i sang", note:null },
+  { bil:"Renault JFC BDH 1,6mm",     marke:"Renault", rec:"222", ryggstod:null, u1:"N", u2:105, u3:295, u4:180, u5:160, obs:"Stampel upp i sang", note:null },
+  { bil:"Renault XFD FDV 1,6mm",     marke:"Renault", rec:"231", ryggstod:70,   u1:"C", u2:80,  u3:295, u4:120, u5:0,   obs:null, note:null },
+  { bil:"Renault XFD FDH 1,6mm",     marke:"Renault", rec:"232", ryggstod:70,   u1:"S", u2:0,   u3:280, u4:120, u5:80,  obs:null, note:null },
+  { bil:"Renault XFD BDV 1,6mm",     marke:"Renault", rec:"233", ryggstod:null, u1:"K", u2:50,  u3:320, u4:130, u5:0,   obs:"Stampel upp i sang", note:null },
+  { bil:"Renault XFD BDH 1,6mm",     marke:"Renault", rec:"234", ryggstod:null, u1:"K", u2:0,   u3:320, u4:130, u5:50,  obs:"Stampel upp i sang", note:null },
+  { bil:"REN HCB FDV 1,6mm",         marke:"Renault", rec:"147", ryggstod:null, u1:"E", u2:0,   u3:200, u4:240, u5:0,   obs:null, note:"Ylva ok / programmerad" },
+  { bil:"REN HCB FDH 1,6mm",         marke:"Renault", rec:"148", ryggstod:null, u1:"Q", u2:0,   u3:200, u4:250, u5:0,   obs:null, note:"Bade alva och ylva borde ses over innan start" },
+  // ── VOLKSWAGEN ───────────────────────────────────────────
+  { bil:"VW 316 FDV med hal",        marke:"Volkswagen", rec:"53",  ryggstod:50,   u1:"C", u2:0,   u3:270, u4:180, u5:0,   obs:null, note:"Inget prog till snormaskin an, ladda ett liknande - korrigera och spara till nr 53" },
+  { bil:"VW 316 FDH med hal",        marke:"Volkswagen", rec:"54",  ryggstod:50,   u1:"S", u2:0,   u3:270, u4:180, u5:0,   obs:null, note:"Olof ej prog. Inget prog till snormaskin an, ladda ett liknande - korrigera och spara" },
+  { bil:"VW 413 BDV",                marke:"Volkswagen", rec:"71",  ryggstod:null, u1:"J", u2:120, u3:310, u4:130, u5:30,  obs:null, note:"Anvand Vinkel till snore" },
+  { bil:"VW 413 BDH",                marke:"Volkswagen", rec:"72",  ryggstod:null, u1:"L", u2:30,  u3:310, u4:130, u5:120, obs:null, note:"Anvand Vinkel till snore. Prog 23/3-2022" },
+  { bil:"VWT5 FDV",                  marke:"Volkswagen", rec:"133/139", ryggstod:null, u1:"H", u2:-7, u3:245, u4:270, u5:20, obs:null, note:"obs ny FI Gul sang, bara pinne, ingen masont, roda snoren (120st glas per sang)" },
+  { bil:"VWT5 FDH",                  marke:"Volkswagen", rec:"134/140", ryggstod:null, u1:"N", u2:10, u3:245, u4:270, u5:-7, obs:null, note:"Galler endast recept 134. 140=gula snore, bottenskiva och 130 per stall" },
+  { bil:"VW 316 FDL",                marke:"Volkswagen", rec:"103/263", ryggstod:70,  u1:"C", u2:0,   u3:270, u4:120, u5:0,   obs:null, note:"Pinta 5 Rep5 JLR stor frigolit i ryggen" },
+  { bil:"VW 316 FDH",                marke:"Volkswagen", rec:"104/264", ryggstod:70,  u1:"S", u2:0,   u3:270, u4:120, u5:0,   obs:null, note:"Pinta 5 Rep5 JLR stor frigolit i ryggen" },
+  { bil:"Passat FDV",                marke:"Volkswagen", rec:"137", ryggstod:95,   u1:"D", u2:0,   u3:300, u4:165, u5:0,   obs:null, note:null },
+  { bil:"Passat FDH",                marke:"Volkswagen", rec:"138", ryggstod:95,   u1:"R", u2:0,   u3:300, u4:165, u5:0,   obs:null, note:null },
+  { bil:"VW 41S FDV",                marke:"Volkswagen", rec:"163", ryggstod:0,    u1:"E", u2:20,  u3:250, u4:220, u5:30,  obs:null, note:null },
+  { bil:"VW 41S FDH",                marke:"Volkswagen", rec:"164", ryggstod:0,    u1:"Q", u2:30,  u3:250, u4:220, u5:20,  obs:null, note:null },
+  { bil:"VW 481 BDV 1,6mm",          marke:"Volkswagen", rec:"187", ryggstod:null, u1:"J", u2:30,  u3:320, u4:160, u5:30,  obs:null, note:null },
+  { bil:"VW 481 BDH 1,6mm",          marke:"Volkswagen", rec:"188", ryggstod:null, u1:"L", u2:30,  u3:320, u4:160, u5:30,  obs:null, note:null },
+  { bil:"VW 482 BDV 1,6mm",          marke:"Volkswagen", rec:"189", ryggstod:null, u1:"J", u2:30,  u3:320, u4:160, u5:30,  obs:null, note:"Dubbla snore pa samtliga robotar, anvand vinkeln!" },
+  { bil:"VW 482 BDH 1,6mm",          marke:"Volkswagen", rec:"190", ryggstod:null, u1:"L", u2:30,  u3:320, u4:130, u5:90,  obs:null, note:"Dubbla snore pa samtliga robotar, anvand vinkeln!" },
+  { bil:"VW 413 FDV Borrade",        marke:"Volkswagen", rec:"61",  ryggstod:70,   u1:"C", u2:25,  u3:240, u4:165, u5:0,   obs:null, note:null },
+  { bil:"VW 413 FDH Borrade",        marke:"Volkswagen", rec:"62",  ryggstod:70,   u1:"S", u2:0,   u3:310, u4:220, u5:25,  obs:null, note:null },
+  { bil:"VW 336 FDV Borrade",        marke:"Volkswagen", rec:"161", ryggstod:0,    u1:"C", u2:10,  u3:230, u4:200, u5:0,   obs:null, note:null },
+  { bil:"VW 336 FDH Borrade",        marke:"Volkswagen", rec:"162", ryggstod:0,    u1:"S", u2:0,   u3:310, u4:300, u5:30,  obs:null, note:null },
+  { bil:"VW 412 BDV",                marke:"Volkswagen", rec:"73",  ryggstod:null, u1:"J", u2:120, u3:310, u4:130, u5:30,  obs:null, note:"Anvand Vinkel till snore. Rad 2 Alva behover programmeras om 2025-09-18" },
+  { bil:"VW 412 BDH",                marke:"Volkswagen", rec:"74",  ryggstod:null, u1:"L", u2:30,  u3:310, u4:130, u5:120, obs:null, note:"Anvand Vinkel till snore. Prog 23/3-2022 rad 2 Alva maste programmeras om" },
+  // ── BMW ──────────────────────────────────────────────────
+  { bil:"BMW G11 FDV",               marke:"BMW", rec:"193", ryggstod:70,   u1:"A", u2:0,   u3:280, u4:190, u5:0,   obs:null, note:null },
+  { bil:"BMW G11 FDH",               marke:"BMW", rec:"194", ryggstod:70,   u1:"U", u2:0,   u3:310, u4:190, u5:0,   obs:null, note:null },
+  { bil:"BMW G11 BDV",               marke:"BMW", rec:"195", ryggstod:null, u1:"L", u2:50,  u3:300, u4:160, u5:50,  obs:null, note:"Dubbla snoren, anvand vinkeln" },
+  { bil:"BMW G11 BDH",               marke:"BMW", rec:"196", ryggstod:null, u1:"J", u2:50,  u3:300, u4:160, u5:50,  obs:null, note:"Olofs vinkel i placering maste ses om (21-02/01). Prog till dubbla snoren" },
+  { bil:"BMW G12 BDV",               marke:"BMW", rec:"197", ryggstod:null, u1:"L", u2:0,   u3:300, u4:160, u5:0,   obs:null, note:null },
+  { bil:"BMW G12 BDH",               marke:"BMW", rec:"198", ryggstod:null, u1:"J", u2:0,   u3:300, u4:160, u5:0,   obs:null, note:null },
+  // ── ROLLS ROYCE ──────────────────────────────────────────
+  { bil:"Rolls Royce FDV 2,6mm",     marke:"Rolls Royce", rec:"3",  ryggstod:0,    u1:"A", u2:40,  u3:250, u4:240, u5:40,  obs:null, note:null },
+  { bil:"Rolls Royce FDH 2,6mm",     marke:"Rolls Royce", rec:"4",  ryggstod:0,    u1:"U", u2:0,   u3:250, u4:240, u5:40,  obs:null, note:null },
+  { bil:"Rolls Royce BDV",           marke:"Rolls Royce", rec:"5",  ryggstod:null, u1:"K", u2:0,   u3:200, u4:150, u5:0,   obs:null, note:null },
+  { bil:"Rolls Royce BDH",           marke:"Rolls Royce", rec:"6",  ryggstod:null, u1:"K", u2:150, u3:215, u4:150, u5:0,   obs:null, note:null },
+  // ── SKODA ────────────────────────────────────────────────
+  { bil:"Skoda 316 FDV",             marke:"Skoda", rec:"101/259", ryggstod:70,  u1:"C", u2:0,   u3:270, u4:140, u5:0,   obs:null, note:"Pinta 5 Rep5 JLR stor frigolit i ryggen" },
+  { bil:"Skoda 316 FDH",             marke:"Skoda", rec:"102/260", ryggstod:70,  u1:"S", u2:0,   u3:270, u4:140, u5:0,   obs:null, note:"Pinta 5 Rep5 JLR stor frigolit i ryggen" },
+  { bil:"Skoda 38x FDV",             marke:"Skoda", rec:"211",     ryggstod:70,  u1:"C", u2:0,   u3:270, u4:120, u5:0,   obs:null, note:null },
+  { bil:"Skoda 38x FDH",             marke:"Skoda", rec:"212",     ryggstod:70,  u1:"S", u2:0,   u3:270, u4:120, u5:50,  obs:null, note:null },
+  { bil:"Skoda 481 FDV",             marke:"Skoda", rec:"7",       ryggstod:70,  u1:"C", u2:90,  u3:290, u4:150, u5:30,  obs:null, note:null },
+  { bil:"Skoda 481 FDH",             marke:"Skoda", rec:"8",       ryggstod:70,  u1:"S", u2:30,  u3:290, u4:160, u5:90,  obs:null, note:null },
+  { bil:"Skoda 382 FDV med hal",     marke:"Skoda", rec:"81",      ryggstod:20,  u1:"C", u2:190, u3:130, u4:280, u5:500, obs:null, note:null },
+  { bil:"Skoda 382 FDH med hal",     marke:"Skoda", rec:"82",      ryggstod:20,  u1:"S", u2:130, u3:190, u4:500, u5:280, obs:null, note:null },
+  { bil:"Skoda 316 FDV med hal",     marke:"Skoda", rec:"209",     ryggstod:0,   u1:"C", u2:0,   u3:270, u4:180, u5:0,   obs:null, note:"Kolla snore" },
+  { bil:"Skoda 316 FDH med hal",     marke:"Skoda", rec:"210",     ryggstod:0,   u1:"S", u2:0,   u3:270, u4:180, u5:0,   obs:null, note:null },
+  // ── PORSCHE ──────────────────────────────────────────────
+  { bil:"Porsche 426 FDV 2,1mm",     marke:"Porsche", rec:"165", ryggstod:60,   u1:"C", u2:0,   u3:280, u4:170, u5:0,   obs:null, note:null },
+  { bil:"Porsche 426 FDR 2,1mm",     marke:"Porsche", rec:"166", ryggstod:0,    u1:"S", u2:0,   u3:280, u4:170, u5:0,   obs:null, note:"Omprogr. till 0mm ryggstod 19/11-24" },
+  { bil:"Porsche 426 BDH 2,1mm",     marke:"Porsche", rec:"253", ryggstod:250,  u1:"L", u2:0,   u3:300, u4:170, u5:0,   obs:null, note:"Anvand vinkeln" },
+  { bil:"Porsche 426 BDV 2,1mm",     marke:"Porsche", rec:"254", ryggstod:250,  u1:"J", u2:70,  u3:300, u4:170, u5:0,   obs:null, note:"Anvand vinkeln" }
+];
+
+var activeFilter = "Alla";
+var searchQuery = "";
+
+function getBrands() {
+  var brands = ["Alla"], seen = {};
+  for (var i = 0; i < data.length; i++) {
+    var m = data[i].marke;
+    if (!seen[m]) { seen[m] = true; brands.push(m); }
+  }
+  return brands;
+}
+
+function renderFilters() {
+  var html = "", brands = getBrands();
+  for (var i = 0; i < brands.length; i++) {
+    var b = brands[i];
+    html += '<button class="filter-btn'+(b===activeFilter?' active':'')+'" onclick="setFilter(\''+b+'\')">'+b+'</button>';
+  }
+  document.getElementById("filterBtns").innerHTML = html;
+}
+
+function setFilter(brand) { activeFilter = brand; renderFilters(); render(); }
+
+function clearSearch() {
+  document.getElementById("searchInput").value = "";
+  searchQuery = ""; render();
+}
+
+function render() {
+  var q = searchQuery.toLowerCase();
+  var filtered = [];
+  for (var i = 0; i < data.length; i++) {
+    var d = data[i];
+    var matchBrand = activeFilter === "Alla" || d.marke === activeFilter;
+    var matchQ = !q || d.bil.toLowerCase().indexOf(q) >= 0
+      || d.rec.toLowerCase().indexOf(q) >= 0
+      || d.marke.toLowerCase().indexOf(q) >= 0;
+    if (matchBrand && matchQ) filtered.push(d);
+  }
+
+  document.getElementById("totalCount").textContent = data.length;
+  document.getElementById("resultsHeader").innerHTML =
+    'Visar <span>'+filtered.length+'</span> av '+data.length+' installningar';
+
+  if (filtered.length === 0) {
+    document.getElementById("grid").innerHTML = '<div class="empty">Inga resultat for "'+searchQuery+'"</div>';
+    return;
+  }
+
+  var html = "";
+  for (var i = 0; i < filtered.length; i++) {
+    var d = filtered[i];
+    var uVals = [d.u1, d.u2, d.u3, d.u4, d.u5];
+    var upprHtml = "";
+    for (var j = 0; j < 5; j++) {
+      var val = uVals[j];
+      var valStr = (val !== null && val !== undefined) ? val : "—";
+      var naClass = (val === null || val === undefined) ? " na" : "";
+      upprHtml += '<div class="uppr-cell'+(j===0?' u1':'')+'">'
+        +'<span class="uppr-cell-lbl">U'+(j+1)+'</span>'
+        +'<span class="uppr-cell-val'+naClass+'">'+valStr+'</span>'
+        +'</div>';
+    }
+    var rygg = d.ryggstod;
+    var ryggStr = (rygg !== null && rygg !== undefined) ? rygg : "—";
+    var ryggClass = (rygg !== null && rygg !== undefined) ? "hl" : "na";
+
+    html += '<div class="card">'
+      +'<div class="card-head">'
+      +'<div><div class="brand-tag">'+d.marke+'</div>'
+      +'<div class="card-title">'+d.bil+'</div>'
+      +(d.obs?'<div class="obs-tag">&#9888; '+d.obs+'</div>':'')
+      +'</div>'
+      +'<div class="rec-badge">REC '+d.rec+'</div>'
+      +'</div>'
+      +'<div class="card-body">'
+      +'<div class="stat"><span class="stat-label">Ryggstod</span><span class="stat-value '+ryggClass+'">'+ryggStr+'</span></div>'
+      +'<div class="stat"><span class="stat-label">Marke</span><span class="stat-value" style="font-size:0.95rem">'+d.marke+'</span></div>'
+      +'<div class="uppr-row"><div class="uppr-label">Uppriktning 1–5</div><div class="uppr-grid">'+upprHtml+'</div></div>'
+      +(d.note?'<div class="note">&#128221; '+d.note+'</div>':'')
+      +'</div></div>';
+  }
+  document.getElementById("grid").innerHTML = html;
+}
+
+document.getElementById("searchInput").addEventListener("input", function(e) {
+  searchQuery = e.target.value; render();
+});
+document.getElementById("clearBtn").addEventListener("click", clearSearch);
+renderFilters();
+render();
+</script>
+</body>
+</html>
